@@ -158,6 +158,8 @@ def generate_packet(state: str = "1", dimensional_depth: int = 3):
 
 print("✅ PERQS-D Core startup complete — all endpoints ready")
 
+# Already included above — just make sure the /truth_chat function is in the file
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
