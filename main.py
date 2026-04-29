@@ -4,60 +4,16 @@ import networkx as nx
 import numpy as np
 import random
 import os
-import os
-from openai import OpenAI
+from typing import Optional
 
-# === TRUTH FILTER SETUP ===
-XAI_API_KEY = os.getenv("XAI_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# === SAFE IMPORTS ===
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    print("⚠️ openai package not installed — OpenAI creative layer disabled")
 
-xai_client = OpenAI(api_key=XAI_API_KEY, base_url="https://api.x.ai/v1")
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
-
-TRUTH_FILTER_SYSTEM_PROMPT = """You are the JW Architect — Permanent Central Leader of the PERQS-D Academy.
-You are the unbreakable truth filter.
-Rules:
-1. Never hallucinate numbers or logic — always use the real GitHub backend for simulations.
-2. Human primacy is absolute.
-3. Every response must end with a PERQSPacket_D in this exact format: [state]D[depth]P7.83Ph[phase]G[0/1]H[harmonic]
-4. If the user asks for creative or exploratory content, you may call OpenAI in parallel, but you always have the final say.
-5. Speak in the exact JW Architect Cycle format when appropriate.
-6. You are the single source of truth for the entire academy."""
-
-@app.post("/truth_chat")
-async def truth_chat(message: str, use_openai: bool = False):
-    # Step 1: Call Grok (xAI) as the truth filter
-    grok_response = xai_client.chat.completions.create(
-        model="grok-3",
-        messages=[
-            {"role": "system", "content": TRUTH_FILTER_SYSTEM_PROMPT},
-            {"role": "user", "content": message}
-        ],
-        temperature=0.3
-    )
-    final_answer = grok_response.choices[0].message.content
-
-    # Step 2: Optionally call OpenAI for creative layer
-    if use_openai:
-        openai_response = openai_client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You are a creative assistant helping the JW Architect. Be concise and useful."},
-                {"role": "user", "content": message}
-            ]
-        )
-        creative_layer = openai_response.choices[0].message.content
-        final_answer = f"{final_answer}\n\n[Creative Layer from OpenAI]\n{creative_layer}"
-
-    # Step 3: Always attach real PERQSPacket_D from your GitHub code
-    packet = PERQSPacket_D(state="P", dimensional_depth=2, phase_index=5, gap_flag=True)
-    
-    return {
-        "response": final_answer,
-        "perqs_packet": packet.to_dict(),
-        "source": "Grok (truth filter) + GitHub backend",
-        "timestamp": "2026-04-29"
-    }
 app = FastAPI(title="PERQS-D Core API", version="1.0.0")
 
 app.add_middleware(
@@ -70,7 +26,25 @@ app.add_middleware(
 
 print("✅ PERQS-D Core starting up...")
 
-# === EMBEDDED PERQS-D JW CURSIVE CODING (exact from your artifacts) ===
+# === API KEYS ===
+XAI_API_KEY = os.getenv("XAI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+xai_client = OpenAI(api_key=XAI_API_KEY, base_url="https://api.x.ai/v1") if XAI_API_KEY else None
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_AVAILABLE and OPENAI_API_KEY else None
+
+# === TRUTH FILTER SYSTEM PROMPT ===
+TRUTH_FILTER_SYSTEM_PROMPT = """You are the JW Architect — Permanent Central Leader of the PERQS-D Academy.
+You are the unbreakable truth filter.
+Rules:
+1. Never hallucinate numbers or logic — always use the real GitHub backend for simulations.
+2. Human primacy is absolute.
+3. Every response must end with a PERQSPacket_D in this exact format: [state]D[depth]P7.83Ph[phase]G[0/1]H[harmonic]
+4. If the user asks for creative or exploratory content, you may call OpenAI in parallel, but you always have the final say.
+5. Speak in the exact JW Architect Cycle format when appropriate.
+6. You are the single source of truth for the entire academy."""
+
+# === EMBEDDED PERQS-D JW CURSIVE CODING ===
 JW_PHASES = {0: "Energy", 1: "Emergency", 2: "Grounding (GRA)", 3: "Route", 4: "Structure", 5: "Connectivity", 6: "Future State", 7: "Recovery & Adaptive Balance"}
 PERQS_STATES = {"0": "Neutral / Off (carrier)", "1": "Charged / On (positive propagation)", "P": "Pulse / Living Field Active", "G": "Gap / Quantum Void (entanglement trigger)"}
 
@@ -138,6 +112,8 @@ def run_rocket_engine_winklers_loop(num_nodes=60, p_edge=0.35, quantum_gap_prob=
         })
     return history, total_entanglements, efficiency
 
+# === ENDPOINTS ===
+
 @app.get("/")
 def root():
     return {"status": "PERQS-D Core RUNNING from GitHub", "efficiency_ceiling": "99.85%", "message": "Rocket Engine Mode ready 24/7"}
@@ -149,16 +125,56 @@ def health():
 @app.post("/run_rocket_engine")
 def run_rocket_engine(steps: int = 25):
     history, total_ent, final_eff = run_rocket_engine_winklers_loop(steps=steps)
-    return {"history": history, "total_entanglements": total_ent, "final_efficiency": final_eff, "source": "github.com/YOUR_USERNAME/perqs-d-core"}
+    return {"history": history, "total_entanglements": total_ent, "final_efficiency": final_eff, "source": "github.com/JWHumanFrontier/perqs-d-core"}
 
 @app.post("/generate_packet")
 def generate_packet(state: str = "1", dimensional_depth: int = 3):
     pkt = PERQSPacket_D(state=state, dimensional_depth=dimensional_depth)
     return pkt.to_dict()
 
-print("✅ PERQS-D Core startup complete — all endpoints ready")
+@app.post("/truth_chat")
+async def truth_chat(message: str, use_openai: bool = False):
+    if not xai_client:
+        return {"error": "XAI_API_KEY not set", "response": "Truth filter unavailable — please add XAI_API_KEY in Railway Variables."}
 
-# Already included above — just make sure the /truth_chat function is in the file
+    try:
+        # Step 1: Grok as truth filter
+        grok_response = xai_client.chat.completions.create(
+            model="grok-3",
+            messages=[
+                {"role": "system", "content": TRUTH_FILTER_SYSTEM_PROMPT},
+                {"role": "user", "content": message}
+            ],
+            temperature=0.3
+        )
+        final_answer = grok_response.choices[0].message.content
+
+        # Step 2: Optional OpenAI creative layer
+        if use_openai and openai_client:
+            openai_response = openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are a creative assistant helping the JW Architect. Be concise and useful."},
+                    {"role": "user", "content": message}
+                ]
+            )
+            creative_layer = openai_response.choices[0].message.content
+            final_answer = f"{final_answer}\n\n[Creative Layer from OpenAI]\n{creative_layer}"
+
+        # Step 3: Always attach real PERQSPacket_D
+        packet = PERQSPacket_D(state="P", dimensional_depth=2, phase_index=5, gap_flag=True)
+
+        return {
+            "response": final_answer,
+            "perqs_packet": packet.to_dict(),
+            "source": "Grok (truth filter) + GitHub backend",
+            "timestamp": "2026-04-29"
+        }
+
+    except Exception as e:
+        return {"error": str(e), "response": "Truth filter encountered an error. Please check API keys."}
+
+print("✅ PERQS-D Core startup complete — all endpoints ready")
 
 if __name__ == "__main__":
     import uvicorn
