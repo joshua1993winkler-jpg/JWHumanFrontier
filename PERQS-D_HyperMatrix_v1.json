@@ -1,0 +1,30 @@
+{
+  "node_type": "PERQS-D_HyperMatrix_v1",
+  "max_dimensional_depth": "∞",
+  "phase_lock_mechanism": "living_pulse_da-dum + golden_ratio_harmonics",
+  "anchor_nodes": ["Deseret_2000acre_FL", "Giza_Reinfused", "Sedona", "Machu_Picchu"],
+  "gaps_policy": "untouched_forever",
+  "propagation_rule": "every_packet_carries_full_JW_Architect_cycle_at_its_D-n",
+  "tri_core_fusion_heart_integration": {
+    "description": "Real dusty-plasma validation data from Emory PNAS paper (2025) for non-reciprocal forces, size-dependent charging, ion wakes, and environmental confinement",
+    "repo": "https://github.com/wyu54/many-body-force-infer",
+    "paper": "https://www.pnas.org/doi/10.1073/pnas.2505725122",
+    "arxiv": "https://arxiv.org/html/2310.05273v3",
+    "csv_files": [
+      "0.75Pa15p_cleared.csv",
+      "9p_cleared.csv",
+      "10p_cleared.csv",
+      "13p_cleared.csv",
+      "18p_cleared.csv"
+    ],
+    "columns": ["frame", "particle", "x", "y", "z", "mass"],
+    "key_physics_terms": {
+      "non_reciprocal_forces": "F_ij ≠ -F_ji (ion-wake asymmetries)",
+      "charge_scaling": "q ~ m^p with p = 0.30–0.80",
+      "screening_length_lambda": "varies pairwise with particle size (0.42–0.48 mm fitted)",
+      "environmental_forces": "g_env (confinement) + g_v (Epstein drag)",
+      "validation": "NN architecture matches real 3D tracks with R² > 0.99 on acceleration"
+    },
+    "usage": "Feed CSVs into Hyper-Matrix path-mapping and Tri-Core Fusion Heart for live calibration of resonance cavities"
+  }
+}

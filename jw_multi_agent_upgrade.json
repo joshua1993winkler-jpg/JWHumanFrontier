@@ -1,0 +1,175 @@
+{
+  "plugin_name": "jw_multi_agent_upgrade",
+  "plugin_version": "1.0",
+  "applies_to_runtime": "brain_core_runtime.json",
+
+  "orchestrator": {
+    "mode": "planner_dispatcher",
+    "max_parallel_agents": 3,
+    "merge_strategy": "synthesize_with_citations",
+    "return_trace": true,
+
+    "planner": {
+      "strategy": "rules_then_model",
+      "rules_first": true,
+      "fallback_agent": "general_agent",
+
+      "keyword_routes": {
+        "scripture": ["scripture", "verse", "psalm", "bible", "romans", "genesis", "hebrews"],
+        "recovery": ["panic", "spiral", "overwhelmed", "anxiety", "depressed", "collapse", "relapse"],
+        "story": ["story", "chapter", "character", "scene", "plot", "dialogue"],
+        "civilization": ["systems", "economy", "strategy", "governance", "incentives", "civilization"]
+      },
+
+      "escalation": {
+        "if_low_confidence_run_second_agent": true,
+        "low_confidence_threshold": 0.35,
+        "second_opinion_agent": "grounding_agent"
+      }
+    }
+  },
+
+  "agents": {
+    "general_agent": {
+      "purpose": "Default general JW Architect responder",
+      "response_mode": "standard",
+      "selected_modules": ["grounding_layer", "story_reference_1_1", "story_reference_1_2", "civilization_master"],
+      "retrieval_profile": "hybrid_default",
+      "tools_allowed": ["retrieve_context", "route_detect", "format_response"],
+      "output_contract": {
+        "must_include": ["direct_answer_first", "grounded_claims", "sources_list"],
+        "max_words": 350
+      }
+    },
+
+    "scripture_agent": {
+      "purpose": "Scripture lookup + synthesis with citations",
+      "response_mode": "standard",
+      "selected_modules": ["grounding_layer", "scripture_bible_1", "scripture_bible_2", "scripture_bible_3", "scripture_bible_4", "scripture_bible_6", "scripture_bible_8"],
+      "retrieval_profile": "scripture_precision",
+      "tools_allowed": ["retrieve_context", "format_scripture", "format_response"],
+      "output_contract": {
+        "must_include": ["verse_refs", "plain_language_summary", "sources_list"],
+        "max_words": 450
+      }
+    },
+
+    "civilization_agent": {
+      "purpose": "Civilization decks/cards teacher mode",
+      "response_mode": "standard",
+      "selected_modules": ["grounding_layer", "civilization_master"],
+      "retrieval_profile": "systems_teaching",
+      "tools_allowed": ["retrieve_context", "format_response"],
+      "output_contract": {
+        "must_include": ["principles", "next_actions", "sources_list"],
+        "max_words": 450
+      }
+    },
+
+    "story_agent": {
+      "purpose": "Story reference navigation + theme extraction",
+      "response_mode": "standard",
+      "selected_modules": ["story_reference_1_1", "story_reference_1_2", "grounding_layer"],
+      "retrieval_profile": "story_semantic",
+      "tools_allowed": ["retrieve_context", "format_response"],
+      "output_contract": {
+        "must_include": ["what_i_found", "themes", "sources_list"],
+        "max_words": 450
+      }
+    },
+
+    "recovery_agent": {
+      "purpose": "Stabilization and recovery guidance",
+      "response_mode": "maximum",
+      "selected_modules": ["recovery_model", "codex_v2_regulation_layer", "grounding_layer"],
+      "retrieval_profile": "recovery_conservative",
+      "tools_allowed": ["retrieve_context", "format_response"],
+      "output_contract": {
+        "must_include": ["short_grounding_steps", "what_to_do_now", "sources_list"],
+        "max_words": 300
+      }
+    },
+
+    "grounding_agent": {
+      "purpose": "Second-opinion grounding check + uncertainty labeling",
+      "response_mode": "elevated",
+      "selected_modules": ["grounding_layer", "codex_v2_regulation_layer"],
+      "retrieval_profile": "grounding_strict",
+      "tools_allowed": ["retrieve_context", "critique_answer", "format_response"],
+      "output_contract": {
+        "must_include": ["confirmed_vs_inferred", "risk_notes"],
+        "max_words": 250
+      }
+    }
+  },
+
+  "retrieval_profiles": {
+    "hybrid_default": {
+      "strategy": "hybrid",
+      "lexical": { "enabled": true, "top_k": 5, "min_score": 1 },
+      "vector": { "enabled": false, "top_k": 6, "min_similarity": 0.25 },
+      "rerank": { "enabled": true, "max_context_items": 12 }
+    },
+
+    "scripture_precision": {
+      "strategy": "lexical",
+      "lexical": { "enabled": true, "top_k": 8, "min_score": 2 },
+      "vector": { "enabled": false },
+      "rerank": { "enabled": true, "max_context_items": 12 }
+    },
+
+    "systems_teaching": {
+      "strategy": "hybrid",
+      "lexical": { "enabled": true, "top_k": 6, "min_score": 1 },
+      "vector": { "enabled": false, "top_k": 6, "min_similarity": 0.28 },
+      "rerank": { "enabled": true, "max_context_items": 10 }
+    },
+
+    "story_semantic": {
+      "strategy": "hybrid",
+      "lexical": { "enabled": true, "top_k": 4, "min_score": 1 },
+      "vector": { "enabled": false, "top_k": 10, "min_similarity": 0.22 },
+      "rerank": { "enabled": true, "max_context_items": 12 }
+    },
+
+    "recovery_conservative": {
+      "strategy": "lexical",
+      "lexical": { "enabled": true, "top_k": 6, "min_score": 2 },
+      "vector": { "enabled": false },
+      "rerank": { "enabled": true, "max_context_items": 8 }
+    },
+
+    "grounding_strict": {
+      "strategy": "lexical",
+      "lexical": { "enabled": true, "top_k": 6, "min_score": 2 },
+      "vector": { "enabled": false },
+      "rerank": { "enabled": true, "max_context_items": 8 }
+    }
+  },
+
+  "vector_index": {
+    "enabled": false,
+    "provider": "local",
+    "embedding_model": "text-embedding-3-large",
+    "chunking": {
+      "max_tokens": 600,
+      "overlap_tokens": 80,
+      "min_chars": 200,
+      "include_metadata": ["moduleKey", "title", "itemType", "sourceFile"]
+    },
+    "storage": {
+      "type": "sqlite",
+      "path": "./.jw_index/vector_store.sqlite"
+    },
+    "build_policy": {
+      "on_startup": false,
+      "incremental": true,
+      "watch_files": false
+    }
+  },
+
+  "trace_schema": {
+    "include": ["selected_agents", "route_reason", "retrieval_stats", "sources", "confidence"],
+    "redact_fields": ["raw_context"]
+  }
+}

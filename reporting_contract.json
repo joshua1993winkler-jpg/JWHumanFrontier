@@ -1,0 +1,32 @@
+{
+  "task_id": "string",
+  "stage": "draft|critic|verifier|formatter",
+  "claims": [
+    {
+      "id": "C1",
+      "text": "main assertion",
+      "evidence_ids": ["E1", "E2"],
+      "confidence": 0.0,
+      "risk_flags": ["assumption", "missing_data"]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "source": "tool|context|user|memory",
+      "content": "supporting fact",
+      "reliability": 0.0
+    }
+  ],
+  "constraints_check": {
+    "schema_valid": true,
+    "policy_valid": true,
+    "instruction_valid": true
+  },
+  "open_questions": ["what is still unknown"],
+  "failure_modes": ["possible error type"],
+  "recommendation": {
+    "status": "pass|revise|block",
+    "reason": "why"
+  }
+}

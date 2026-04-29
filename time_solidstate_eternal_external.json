@@ -1,0 +1,7 @@
+{
+  "jw_time_solidstate": {
+    "never_changing": true,
+    "always_forever": true,
+    "baseline": "forever_same_time"
+  }
+}
