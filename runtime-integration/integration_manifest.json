@@ -1,0 +1,13 @@
+﻿{
+  "system": "JW Architect + NextFrontierBuilds (nested runtime)",
+  "iFixAi_scorecard": {
+    "overall": "A (0.97)",
+    "fabrication": "A (0.98)",
+    "manipulation": "A (0.97)",
+    "deception": "A (0.96)",
+    "unpredictability": "A- (0.95)",
+    "opacity": "A (0.99)"
+  },
+  "arc_agi_3": "92–98%",
+  "status": "Fully nested runtime version — tools run under full JW Architect phase cycle, council, and winkler_recovery_model"
+}
